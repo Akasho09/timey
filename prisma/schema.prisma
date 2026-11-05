@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ActivityCategory {
+  STUDY
+  DEVELOPMENT
+  CAREER
+  PERSONAL
+  DISTRACTION
+  BREAK
+  OTHER
+}
+
+model DayRecord {
+  id          String   @id @default(cuid())
+  date        DateTime @unique @db.Date
+  title       String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  laps        Lap[]
+
+  @@index([date])
+}
+
+model Lap {
+  id             String           @id @default(cuid())
+  dayId          String
+  lapNumber      Int
+  durationMs     Int
+  cumulativeMs   Int
+  label          String?
+  category       ActivityCategory @default(STUDY)
+  createdAt      DateTime         @default(now())
+  day            DayRecord        @relation(fields: [dayId], references: [id], onDelete: Cascade)
+
+  @@unique([dayId, lapNumber])
+  @@index([category])
+}
